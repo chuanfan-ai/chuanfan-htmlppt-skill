@@ -1,10 +1,10 @@
-# Guizang PPT Skill Enhanced
+# Chuanfan HTMLPPT Skill
 
-An enhanced local-agent skill for generating horizontal HTML slide decks. It builds on [op7418/guizang-ppt-skill](https://github.com/op7418/guizang-ppt-skill) and adds a practical local presentation editor.
+An enhanced local-agent skill for generating HTMLPPT: horizontal, browser-native HTML presentation decks. It builds on [op7418/guizang-ppt-skill](https://github.com/op7418/guizang-ppt-skill) and adds a practical local presentation editor.
 
 ## What It Does
 
-- Generates single-file HTML slide decks
+- Generates single-file HTMLPPT decks
 - Supports two visual systems:
   - Editorial magazine x electronic ink
   - Swiss International Style
@@ -30,24 +30,24 @@ Claude Code:
 
 ```bash
 mkdir -p ~/.claude/skills
-git clone https://github.com/chuanfan-ai/guizang-ppt-skill.git ~/.claude/skills/guizang-ppt-skill
+git clone https://github.com/chuanfan-ai/chuanfan-htmlppt-skill.git ~/.claude/skills/chuanfan-htmlppt-skill
 ```
 
 Codex:
 
 ```bash
 mkdir -p ~/.codex/skills
-git clone https://github.com/chuanfan-ai/guizang-ppt-skill.git ~/.codex/skills/guizang-ppt-skill
+git clone https://github.com/chuanfan-ai/chuanfan-htmlppt-skill.git ~/.codex/skills/chuanfan-htmlppt-skill
 ```
 
 Shared skill pool:
 
 ```bash
 mkdir -p ~/.agents/skills
-git clone https://github.com/chuanfan-ai/guizang-ppt-skill.git ~/.agents/skills/guizang-ppt-skill
+git clone https://github.com/chuanfan-ai/chuanfan-htmlppt-skill.git ~/.agents/skills/chuanfan-htmlppt-skill
 
-ln -sfn ~/.agents/skills/guizang-ppt-skill ~/.claude/skills/guizang-ppt-skill
-ln -sfn ~/.agents/skills/guizang-ppt-skill ~/.codex/skills/guizang-ppt-skill
+ln -sfn ~/.agents/skills/chuanfan-htmlppt-skill ~/.claude/skills/chuanfan-htmlppt-skill
+ln -sfn ~/.agents/skills/chuanfan-htmlppt-skill ~/.codex/skills/chuanfan-htmlppt-skill
 ```
 
 ## Use
@@ -71,7 +71,7 @@ Opening the generated `index.html` directly is enough for normal presentation.
 For persistent image replacement or added images, start the local editor service:
 
 ```bash
-python3 ~/.agents/skills/guizang-ppt-skill/scripts/local-edit-server.py --deck-dir /path/to/your/ppt --open
+python3 ~/.agents/skills/chuanfan-htmlppt-skill/scripts/local-edit-server.py --deck-dir /path/to/your/ppt --open
 ```
 
 It opens:
@@ -93,7 +93,7 @@ Editing behavior:
 Validate the skill:
 
 ```bash
-python3 ~/.codex/skills/.system/skill-creator/scripts/quick_validate.py /path/to/guizang-ppt-skill
+python3 ~/.codex/skills/.system/skill-creator/scripts/quick_validate.py /path/to/chuanfan-htmlppt-skill
 ```
 
 Validate a Swiss deck:

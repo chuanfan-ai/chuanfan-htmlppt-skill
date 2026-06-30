@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Local editor service for guizang HTML decks.
+"""Local editor service for Chuanfan HTMLPPT decks.
 
 It serves one deck directory and accepts image replacements, saving them under
 images/user-edits/ with content-hash deduplication.
@@ -21,6 +21,8 @@ from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 
 VERSION = "1.0.0"
 MAX_UPLOAD_BYTES = 80 * 1024 * 1024
+CONFIG_PATHS = {"/__chuanfan_htmlppt_editor__/config", "/__guizang_editor__/config"}
+UPLOAD_PATHS = {"/__chuanfan_htmlppt_editor__/upload-image", "/__guizang_editor__/upload-image"}
 ALLOWED_EXTS = {
     ".png": "png",
     ".jpg": "jpg",
@@ -60,7 +62,7 @@ class EditorHandler(SimpleHTTPRequestHandler):
         self.end_headers()
 
     def do_GET(self) -> None:
-        if self.path == "/__guizang_editor__/config":
+        if self.path in CONFIG_PATHS:
             self.send_json(
                 {
                     "ok": True,
@@ -74,7 +76,7 @@ class EditorHandler(SimpleHTTPRequestHandler):
         super().do_GET()
 
     def do_POST(self) -> None:
-        if self.path != "/__guizang_editor__/upload-image":
+        if self.path not in UPLOAD_PATHS:
             self.send_error(404)
             return
 
@@ -131,7 +133,7 @@ class EditorHandler(SimpleHTTPRequestHandler):
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Serve and edit a guizang HTML PPT deck locally.")
+    parser = argparse.ArgumentParser(description="Serve and edit a Chuanfan HTMLPPT deck locally.")
     parser.add_argument("--deck-dir", default=".", help="Deck directory containing index.html and images/")
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--port", type=int, default=17777)
@@ -151,7 +153,7 @@ def main() -> int:
 
     server = ThreadingHTTPServer((args.host, args.port), Handler)
     url = f"http://{args.host}:{args.port}/index.html"
-    print(f"guizang local editor: {url}")
+    print(f"Chuanfan HTMLPPT local editor: {url}")
     print(f"image edits: {deck_dir / 'images' / 'user-edits'}")
     if args.open:
         webbrowser.open(url)

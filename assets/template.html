@@ -480,7 +480,7 @@
 <body>
 <script>
   (function(){
-    const KEY = 'guizang-ppt-low-power';
+    const KEY = 'chuanfan-htmlppt-low-power';
     const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
     const stored = localStorage.getItem(KEY);
     window.__lowPowerMode = stored === '1' || (stored === null && reduced);
@@ -895,11 +895,11 @@ if(motion){
 (function(){
   const body = document.body;
   const pathKey = location.pathname || 'deck';
-  const editKey = 'guizang-editor-edits:' + pathKey;
-  const overlayKey = 'guizang-editor-overlays:' + pathKey;
-  const serviceKey = 'guizang-editor-service-url';
+  const editKey = 'chuanfan-htmlppt-editor-edits:' + pathKey;
+  const overlayKey = 'chuanfan-htmlppt-editor-overlays:' + pathKey;
+  const serviceKey = 'chuanfan-htmlppt-editor-service-url';
   const defaultService = 'http://127.0.0.1:17777';
-  const scriptPath = '/Users/chuanfan/.agents/skills/guizang-ppt-skill/scripts/local-edit-server.py';
+  const scriptPath = '<SKILL_ROOT>/scripts/local-edit-server.py';
   let serviceUrl = localStorage.getItem(serviceKey) || defaultService;
   let edits = {};
   let overlays = {};
@@ -965,7 +965,7 @@ if(motion){
     serviceUrl = serviceInput.value.trim() || defaultService;
     localStorage.setItem(serviceKey, serviceUrl);
     try{
-      const res = await fetch(serviceUrl + '/__guizang_editor__/config', {cache:'no-store'});
+      const res = await fetch(serviceUrl + '/__chuanfan_htmlppt_editor__/config', {cache:'no-store'});
       const data = await res.json();
       if(data.ok){
         statusEl.innerHTML = '<span class="ok">已连接</span> 本地编辑服务。图片替换会写入 ' + data.saveDir + '。';
@@ -980,7 +980,7 @@ if(motion){
     if(!await checkService()) throw new Error('local editor service is not running');
     const fd = new FormData();
     fd.append('file', file, file.name || 'image.png');
-    const res = await fetch(serviceUrl + '/__guizang_editor__/upload-image', {method:'POST', body:fd});
+    const res = await fetch(serviceUrl + '/__chuanfan_htmlppt_editor__/upload-image', {method:'POST', body:fd});
     const data = await res.json();
     if(!data.ok) throw new Error(data.error || 'upload failed');
     return data.path;

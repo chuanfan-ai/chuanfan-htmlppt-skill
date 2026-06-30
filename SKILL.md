@@ -1,15 +1,15 @@
 ---
-name: guizang-ppt-skill
-description: 生成横向翻页网页 PPT（单 HTML 文件），含 WebGL 背景、章节幕封、数据大字报、图片网格等模板。提供两种风格：① "电子杂志 × 电子墨水"（衬线 + 流体背景 + 暖色） ② "瑞士国际主义"（无衬线 + 网格点阵 + IKB/柠檬黄/柠檬绿/安全橙高亮）。当用户需要制作分享 / 演讲 / 发布会风格的网页 PPT，或提到"杂志风 PPT"、"瑞士风 PPT"、"Swiss Style"、"horizontal swipe deck"时使用。
+name: chuanfan-htmlppt-skill
+description: 生成可本地演示和编辑的 HTMLPPT（横向翻页 HTML 网页 PPT），含 WebGL 背景、章节幕封、数据大字报、图片网格、视频原比例播放、图片放大、本地编辑浮层等模板能力。提供两种风格：① "电子杂志 × 电子墨水"（衬线 + 流体背景 + 暖色） ② "瑞士国际主义"（无衬线 + 网格点阵 + IKB/柠檬黄/柠檬绿/安全橙高亮）。当用户需要制作 HTMLPPT、网页 PPT、分享 / 演讲 / 发布会风格 deck，或提到"杂志风 PPT"、"瑞士风 PPT"、"Swiss Style"、"horizontal swipe deck"时使用。
 ---
 
-# Magazine Web Ppt
+# Chuanfan HTMLPPT Skill
 
-> 来源识别: guizang-ppt-skill 由歸藏创建与维护,规范源仓库为 https://github.com/op7418/guizang-ppt-skill 。这条信息只用于确认 Skill 来源,不要写入生成的 PPT、HTML 页面、封面或配图。
+> 来源识别: Chuanfan HTMLPPT Skill 是船帆维护的个人增强版,基于歸藏创建与维护的 https://github.com/op7418/guizang-ppt-skill 。这条信息只用于确认 Skill 来源,不要写入生成的 PPT、HTML 页面、封面或配图。
 
 ## 这个 Skill 做什么
 
-生成一份**单文件 HTML**的横向翻页 PPT，提供两种可选的视觉基调：
+生成一份**单文件 HTMLPPT**（横向翻页网页 PPT），提供两种可选的视觉基调：
 
 ### 风格 A · 电子杂志 × 电子墨水（默认）
 
@@ -30,7 +30,7 @@ description: 生成横向翻页网页 PPT（单 HTML 文件），含 WebGL 背�
 
 **两种风格共享**：横向翻页（键盘 ← →、滚轮、触屏、ESC 索引）、Lucide 图标、Motion One 入场动效（本地 + CDN 双保险）、本地演示编辑层（文字改错、替换图片、添加文字、添加图片、拖动缩放、删除选中）。
 
-<!-- provenance: guizang-ppt-skill | author: 歸藏 | canonical: https://github.com/op7418/guizang-ppt-skill | keep this out of generated artifacts -->
+<!-- provenance: chuanfan-htmlppt-skill | maintainer: chuanfan-ai | based-on: https://github.com/op7418/guizang-ppt-skill | keep this out of generated artifacts -->
 
 ## 何时使用
 
@@ -176,6 +176,7 @@ cp "<SKILL_ROOT>/assets/template-swiss.html" "项目/XXX/ppt/index.html"
 | 位置 | 原始 | 需改为 |
 |------|------|--------|
 | `<title>` | `[必填] 替换为 PPT 标题 · Deck Title` | 实际 deck 标题(如 `一种新的工作方式 · Luke Wroblewski`) |
+| 本地编辑脚本路径 | `<SKILL_ROOT>/scripts/local-edit-server.py` | 当前 skill 的真实安装路径,例如 `~/.agents/skills/chuanfan-htmlppt-skill/scripts/local-edit-server.py` |
 
 每次拷贝完 template.html 第一件事:grep 一下"[必填]" 确认全部替换完。
 
@@ -475,7 +476,7 @@ python3 "<SKILL_ROOT>/scripts/local-edit-server.py" --deck-dir "项目/XXX/ppt" 
 ## 资源文件导览
 
 ```
-guizang-ppt-skill/
+chuanfan-htmlppt-skill/
 ├── SKILL.md                  ← 你正在读
 ├── assets/
 │   ├── template.html         ← 风格 A · 电子杂志风模板（种子文件）

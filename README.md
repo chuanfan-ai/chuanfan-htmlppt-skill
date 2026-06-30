@@ -1,12 +1,12 @@
-# Guizang PPT Skill Enhanced
+# Chuanfan HTMLPPT Skill
 
-一个面向本地 AI Agent 的网页 PPT 生成 skill。它可以生成横向翻页 HTML PPT，并内置演示级本地编辑能力：改字、替换图片、添加文字、添加图片、拖动缩放和删除选中元素。
+一个面向本地 AI Agent 的 HTMLPPT 生成 skill。它可以生成横向翻页网页 PPT，并内置演示级本地编辑能力：改字、替换图片、添加文字、添加图片、拖动缩放和删除选中元素。
 
-本仓库是基于 [op7418/guizang-ppt-skill](https://github.com/op7418/guizang-ppt-skill) 的个人增强版。原始视觉系统、版式体系和大量质量规则来自歸藏维护的开源项目；本版本重点增强了本地演示编辑、图片落盘保存和 Codex/Claude 共享 skill 使用体验。
+本仓库是船帆维护的 HTMLPPT skill，基于 [op7418/guizang-ppt-skill](https://github.com/op7418/guizang-ppt-skill) 做个人增强。原始视觉系统、版式体系和大量质量规则来自歸藏维护的开源项目；本版本重点增强了本地演示编辑、图片落盘保存和 Codex/Claude 共享 skill 使用体验。
 
 ## 核心能力
 
-- 生成单文件 HTML 横向翻页 PPT
+- 生成单文件 HTMLPPT / 横向翻页网页 PPT
 - 支持两套视觉系统：
   - 电子杂志 × 电子墨水
   - 瑞士国际主义
@@ -33,7 +33,7 @@
 
 - 用文章、PDF、飞书文档、Markdown 做演示 PPT
 - 线下分享、私享会、demo day、产品发布
-- 需要漂亮但可本地快速修改的 HTML PPT
+- 需要漂亮但可本地快速修改的 HTMLPPT
 - 需要把飞书/本地文档中的图片、视频原比例放入演示文稿
 - 演示前临时补字、补图、调整位置
 
@@ -50,14 +50,14 @@
 
 ```bash
 mkdir -p ~/.claude/skills
-git clone https://github.com/chuanfan-ai/guizang-ppt-skill.git ~/.claude/skills/guizang-ppt-skill
+git clone https://github.com/chuanfan-ai/chuanfan-htmlppt-skill.git ~/.claude/skills/chuanfan-htmlppt-skill
 ```
 
 ### Codex
 
 ```bash
 mkdir -p ~/.codex/skills
-git clone https://github.com/chuanfan-ai/guizang-ppt-skill.git ~/.codex/skills/guizang-ppt-skill
+git clone https://github.com/chuanfan-ai/chuanfan-htmlppt-skill.git ~/.codex/skills/chuanfan-htmlppt-skill
 ```
 
 ### 共享 skill 池
@@ -66,10 +66,10 @@ git clone https://github.com/chuanfan-ai/guizang-ppt-skill.git ~/.codex/skills/g
 
 ```bash
 mkdir -p ~/.agents/skills
-git clone https://github.com/chuanfan-ai/guizang-ppt-skill.git ~/.agents/skills/guizang-ppt-skill
+git clone https://github.com/chuanfan-ai/chuanfan-htmlppt-skill.git ~/.agents/skills/chuanfan-htmlppt-skill
 
-ln -sfn ~/.agents/skills/guizang-ppt-skill ~/.claude/skills/guizang-ppt-skill
-ln -sfn ~/.agents/skills/guizang-ppt-skill ~/.codex/skills/guizang-ppt-skill
+ln -sfn ~/.agents/skills/chuanfan-htmlppt-skill ~/.claude/skills/chuanfan-htmlppt-skill
+ln -sfn ~/.agents/skills/chuanfan-htmlppt-skill ~/.codex/skills/chuanfan-htmlppt-skill
 ```
 
 ## 使用方式
@@ -77,7 +77,7 @@ ln -sfn ~/.agents/skills/guizang-ppt-skill ~/.codex/skills/guizang-ppt-skill
 安装后，对支持 skill 的 Agent 说：
 
 ```text
-帮我把这份文档做成一份瑞士风 HTML PPT。
+帮我把这份文档做成一份瑞士风 HTMLPPT。
 ```
 
 或者：
@@ -89,11 +89,12 @@ ln -sfn ~/.agents/skills/guizang-ppt-skill ~/.codex/skills/guizang-ppt-skill
 常见触发词：
 
 - 做 PPT
+- 生成 HTMLPPT
 - 生成 HTML PPT
 - 杂志风 PPT
 - 瑞士风 PPT
 - horizontal swipe deck
-- 用 guizang-ppt-skill
+- 用 chuanfan-htmlppt-skill
 
 ## 本地编辑服务
 
@@ -102,13 +103,13 @@ ln -sfn ~/.agents/skills/guizang-ppt-skill ~/.codex/skills/guizang-ppt-skill
 如果需要在浏览器里持久化替换图片或新增图片，启动本地编辑服务：
 
 ```bash
-python3 ~/.agents/skills/guizang-ppt-skill/scripts/local-edit-server.py --deck-dir /path/to/your/ppt --open
+python3 ~/.agents/skills/chuanfan-htmlppt-skill/scripts/local-edit-server.py --deck-dir /path/to/your/ppt --open
 ```
 
 如果安装在 Claude 或 Codex 私有目录，把脚本路径换成实际位置：
 
 ```bash
-python3 ~/.codex/skills/guizang-ppt-skill/scripts/local-edit-server.py --deck-dir /path/to/your/ppt --open
+python3 ~/.codex/skills/chuanfan-htmlppt-skill/scripts/local-edit-server.py --deck-dir /path/to/your/ppt --open
 ```
 
 服务启动后会打开：
@@ -128,7 +129,7 @@ http://127.0.0.1:17777/index.html
 ## 目录结构
 
 ```text
-guizang-ppt-skill/
+chuanfan-htmlppt-skill/
 ├── SKILL.md
 ├── assets/
 │   ├── template.html
@@ -152,7 +153,7 @@ guizang-ppt-skill/
 校验 skill 基本结构：
 
 ```bash
-python3 ~/.codex/skills/.system/skill-creator/scripts/quick_validate.py /path/to/guizang-ppt-skill
+python3 ~/.codex/skills/.system/skill-creator/scripts/quick_validate.py /path/to/chuanfan-htmlppt-skill
 ```
 
 校验瑞士风 deck：
