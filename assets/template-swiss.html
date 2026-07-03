@@ -1191,7 +1191,7 @@
   .g-edit-mode [contenteditable="true"]{outline:1.5px dashed var(--accent);outline-offset:3px;cursor:text}
   .g-edit-mode .slide img{outline:2px solid var(--accent);outline-offset:4px;cursor:copy}
   .g-edit-layer{position:absolute;inset:0;z-index:80;pointer-events:none}
-  .g-edit-mode .g-edit-layer{pointer-events:auto}
+  .g-edit-mode .g-edit-layer{pointer-events:none}
   .g-overlay-item{position:absolute;box-sizing:border-box;min-width:56px;min-height:36px;pointer-events:auto}
   .g-edit-mode .g-overlay-item{outline:1.5px solid rgba(0,0,0,.28);cursor:move}
   .g-edit-mode .g-overlay-item.selected{outline:2px solid var(--accent)}
@@ -1212,6 +1212,19 @@
   .g-config-panel button{border:1px solid rgba(0,0,0,.24);background:#f7f7f7;color:#111;padding:8px 10px;cursor:pointer}
   .g-config-panel .ok{color:#0b7a3b}
   .g-config-panel .bad{color:#b42318}
+  .g-history-panel{position:fixed;right:18px;bottom:64px;z-index:10002;width:min(560px,calc(100vw - 36px));max-height:min(72vh,680px);overflow:auto;background:rgba(255,255,255,.97);color:#111;border:1px solid rgba(0,0,0,.16);box-shadow:0 18px 48px rgba(0,0,0,.2);padding:16px;display:none;backdrop-filter:blur(14px)}
+  .g-history-panel.open{display:block}
+  .g-history-panel h3{margin:0 0 10px;font:700 16px/1.25 var(--sans),var(--sans-zh)}
+  .g-history-panel p{margin:8px 0;font:400 13px/1.5 var(--sans),var(--sans-zh);color:#444}
+  .g-history-panel .row{display:flex;gap:8px;align-items:center;margin-top:10px;flex-wrap:wrap}
+  .g-history-panel input{flex:1;min-width:180px;border:1px solid #ddd;background:#fff;padding:8px;color:#111;font:500 13px/1.2 var(--sans),var(--sans-zh);border-radius:6px}
+  .g-history-panel button{border:1px solid rgba(0,0,0,.24);background:#f7f7f7;color:#111;padding:8px 10px;cursor:pointer;font:600 13px/1 var(--sans),var(--sans-zh);border-radius:6px}
+  .g-history-panel button:hover{background:#fff}
+  .g-history-panel .g-history-list{display:grid;gap:8px;margin-top:12px}
+  .g-history-item{border:1px solid rgba(0,0,0,.12);padding:10px;background:#fff;display:grid;gap:8px}
+  .g-history-title{font:700 13px/1.35 var(--sans),var(--sans-zh);color:#111}
+  .g-history-meta{font:500 12px/1.45 var(--mono),var(--sans-zh);color:#666;word-break:break-all}
+  .g-history-empty{padding:14px;background:#f5f5f5;color:#555;font:500 13px/1.5 var(--sans),var(--sans-zh)}
 </style>
 </head>
 <body class="canvas-mode">
@@ -2458,17 +2471,22 @@ if(motion){
   const pathKey = location.pathname || 'deck';
   const editKey = 'chuanfan-htmlppt-editor-edits:' + pathKey;
   const overlayKey = 'chuanfan-htmlppt-editor-overlays:' + pathKey;
+  const historyKey = 'chuanfan-htmlppt-editor-history:' + pathKey;
   const serviceKey = 'chuanfan-htmlppt-editor-service-url';
   const defaultService = 'http://127.0.0.1:17777';
   const scriptPath = '<SKILL_ROOT>/scripts/local-edit-server.py';
+  const maxHistory = 40;
   let serviceUrl = localStorage.getItem(serviceKey) || defaultService;
   let edits = {};
   let overlays = {};
+  let history = [];
   let activeImage = null;
   let imageMode = 'replace';
   let selectedOverlay = null;
   try { edits = JSON.parse(localStorage.getItem(editKey) || '{}'); } catch { edits = {}; }
   try { overlays = JSON.parse(localStorage.getItem(overlayKey) || '{}'); } catch { overlays = {}; }
+  try { history = JSON.parse(localStorage.getItem(historyKey) || '[]'); } catch { history = []; }
+  if(!Array.isArray(history)) history = [];
 
   const saveEdits = () => localStorage.setItem(editKey, JSON.stringify(edits));
   const deckDir = () => location.protocol === 'file:'
@@ -2510,6 +2528,8 @@ if(motion){
     <button type="button" class="g-add-image">添加图片</button>
     <button type="button" class="g-delete-overlay">删除选中</button>
     <button type="button" class="g-fullscreen">全屏</button>
+    <button type="button" class="g-save-version">保存版本</button>
+    <button type="button" class="g-open-history">历史版本</button>
     <button type="button" class="g-editor-reset">重置</button>
     <input class="g-image-input" type="file" accept="image/*" hidden>`;
   document.body.appendChild(toolbar);
@@ -2521,6 +2541,15 @@ if(motion){
   const deleteBtn = toolbar.querySelector('.g-delete-overlay');
   const resetBtn = toolbar.querySelector('.g-editor-reset');
   const fullBtn = toolbar.querySelector('.g-fullscreen');
+  const saveVersionBtn = toolbar.querySelector('.g-save-version');
+  const historyBtn = toolbar.querySelector('.g-open-history');
+
+  const historyPanel = document.createElement('div');
+  historyPanel.className = 'g-history-panel';
+  historyPanel.innerHTML = '<h3>历史版本</h3><p>保存当前编辑状态后，可以随时恢复。恢复前会自动保存一份“恢复前自动备份”。</p><div class="row"><input class="g-history-name" placeholder="版本名，例如：讲稿修改后 / 图片替换后"><button type="button" class="g-history-save-in-panel">保存当前版本</button><button type="button" class="g-history-close">关闭</button></div><div class="g-history-list"></div>';
+  document.body.appendChild(historyPanel);
+  const historyListEl = historyPanel.querySelector('.g-history-list');
+  const historyNameInput = historyPanel.querySelector('.g-history-name');
 
   async function checkService(){
     serviceUrl = serviceInput.value.trim() || defaultService;
@@ -2668,8 +2697,91 @@ if(motion){
     '.slide h1','.slide h2','.slide h3','.slide p','.slide li','.slide em','.slide strong',
     '.slide .lead','.slide .kicker','.slide .t-meta','.slide .t-cat','.slide .quote-large',
     '.slide .stat-label','.slide .stat-nb','.slide .stat-note','.slide .media-caption',
-    '.slide .chrome-min .l','.slide .chrome-min .r','[data-editable]'
+    '.slide .chrome-min .l','.slide .chrome-min .r','.slide .bullet-list div','.slide .case-card',
+    '.slide .method-card','.slide .prompt-box','.slide .prompt-box code','.slide pre','.slide code','[data-editable]'
   ].join(',');
+
+  const saveHistory = () => localStorage.setItem(historyKey, JSON.stringify(history.slice(0, maxHistory)));
+  const nowLabel = () => {
+    const d = new Date();
+    const pad = n => String(n).padStart(2, '0');
+    return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+  };
+  function syncCurrentDomToEdits(){
+    document.querySelectorAll(textSelector).forEach(node=>{
+      if(!node.dataset.editId) return;
+      edits[node.dataset.editId] = {type:'html', value:node.innerHTML};
+    });
+    document.querySelectorAll('.slide img[data-edit-id]').forEach(img=>{
+      const src = img.getAttribute('src');
+      if(src && src.includes('images/user-edits/')) edits[img.dataset.editId] = {type:'image', value:src};
+    });
+    saveEdits();
+  }
+  function historySummary(item){
+    const editCount = item.edits ? Object.keys(item.edits).length : 0;
+    const overlayCount = item.overlays ? Object.values(item.overlays).reduce((n, arr)=>n + (Array.isArray(arr) ? arr.length : 0), 0) : 0;
+    return '第 ' + (Number(item.slideIndex || 0) + 1) + ' 页 · ' + editCount + ' 项文字/图片改动 · ' + overlayCount + ' 个新增元素';
+  }
+  function saveVersion(label){
+    syncCurrentDomToEdits();
+    const item = {
+      id:'ver-' + Date.now(),
+      title:(label || '').trim() || '手动保存 ' + nowLabel(),
+      createdAt:new Date().toISOString(),
+      slideIndex:currentSlideIndex(),
+      edits:JSON.parse(JSON.stringify(edits || {})),
+      overlays:JSON.parse(JSON.stringify(overlays || {}))
+    };
+    history.unshift(item);
+    history = history.slice(0, maxHistory);
+    saveHistory();
+    return item;
+  }
+  function restoreVersion(id){
+    const item = history.find(v=>v.id === id);
+    if(!item) return;
+    saveVersion('恢复前自动备份 ' + nowLabel());
+    edits = JSON.parse(JSON.stringify(item.edits || {}));
+    overlays = JSON.parse(JSON.stringify(item.overlays || {}));
+    saveEdits();
+    saveOverlays();
+    location.reload();
+  }
+  function deleteVersion(id){
+    history = history.filter(v=>v.id !== id);
+    saveHistory();
+    renderHistory();
+  }
+  function renderHistory(){
+    historyListEl.innerHTML = '';
+    if(!history.length){
+      const empty = document.createElement('div');
+      empty.className = 'g-history-empty';
+      empty.textContent = '还没有保存过历史版本。点“保存版本”后会出现在这里。';
+      historyListEl.appendChild(empty);
+      return;
+    }
+    history.forEach(item=>{
+      const row = document.createElement('div');
+      row.className = 'g-history-item';
+      const time = item.createdAt ? new Date(item.createdAt).toLocaleString() : '';
+      row.innerHTML = '<div class="g-history-title"></div><div class="g-history-meta"></div><div class="row"><button type="button" class="g-restore">恢复</button><button type="button" class="g-delete">删除</button></div>';
+      row.querySelector('.g-history-title').textContent = item.title || '未命名版本';
+      row.querySelector('.g-history-meta').textContent = time + ' · ' + historySummary(item);
+      row.querySelector('.g-restore').addEventListener('click', ()=>{
+        if(confirm('恢复到这个历史版本？当前状态会先自动保存一份备份。')) restoreVersion(item.id);
+      });
+      row.querySelector('.g-delete').addEventListener('click', ()=>{
+        if(confirm('删除这个历史版本？')) deleteVersion(item.id);
+      });
+      historyListEl.appendChild(row);
+    });
+  }
+  function openHistory(){
+    renderHistory();
+    historyPanel.classList.add('open');
+  }
 
   document.querySelectorAll(textSelector).forEach((node, index)=>{
     if(!node.dataset.editId) node.dataset.editId = 'text-' + index;
@@ -2774,11 +2886,33 @@ if(motion){
     if(!document.fullscreenElement) document.documentElement.requestFullscreen?.();
     else document.exitFullscreen?.();
   });
+  saveVersionBtn.addEventListener('click', (event)=>{
+    event.stopPropagation();
+    saveVersion(historyNameInput.value);
+    historyNameInput.value = '';
+    saveVersionBtn.textContent = '已保存';
+    setTimeout(()=>{ saveVersionBtn.textContent = '保存版本'; }, 1200);
+    if(historyPanel.classList.contains('open')) renderHistory();
+  });
+  historyBtn.addEventListener('click', (event)=>{event.stopPropagation(); openHistory();});
+  historyPanel.querySelector('.g-history-save-in-panel').addEventListener('click', (event)=>{
+    event.stopPropagation();
+    saveVersion(historyNameInput.value);
+    historyNameInput.value = '';
+    renderHistory();
+  });
+  historyPanel.querySelector('.g-history-close').addEventListener('click', ()=>historyPanel.classList.remove('open'));
   toolbar.querySelector('.g-config').addEventListener('click', (event)=>{event.stopPropagation(); panel.classList.add('open'); checkService();});
   panel.querySelector('.g-check').addEventListener('click', checkService);
   panel.querySelector('.g-close').addEventListener('click', ()=>panel.classList.remove('open'));
   lightbox.addEventListener('click', ()=>lightbox.classList.remove('open'));
   addEventListener('keydown', (event)=>{
+    if(event.key === 'Escape' && historyPanel.classList.contains('open')){
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      historyPanel.classList.remove('open');
+      return;
+    }
     if(body.classList.contains('g-edit-mode') && event.target.closest?.('[contenteditable="true"]')){
       event.stopImmediatePropagation();
       return;

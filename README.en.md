@@ -1,6 +1,6 @@
 # Chuanfan HTMLPPT Skill
 
-An enhanced local-agent skill for generating HTMLPPT: horizontal, browser-native HTML presentation decks. It builds on [op7418/guizang-ppt-skill](https://github.com/op7418/guizang-ppt-skill) and adds a practical local presentation editor.
+An enhanced local-agent skill for generating HTMLPPT: horizontal, browser-native HTML presentation decks. It builds on [op7418/guizang-ppt-skill](https://github.com/op7418/guizang-ppt-skill) and adds a practical local presentation editor with version save and restore.
 
 ## What It Does
 
@@ -13,16 +13,23 @@ An enhanced local-agent skill for generating HTMLPPT: horizontal, browser-native
 - Provides image lightbox preview
 - Adds a local presentation editing layer:
   - edit text
+  - preserve and edit valuable prompt, code, list, and card content
   - replace existing images
   - add text overlays
   - add image overlays
   - drag and resize overlay items
   - delete selected overlay items
+  - save the current edit as a version
+  - restore previous versions
 - Includes a local editor service:
   - saves image edits to `images/user-edits/`
   - stores only relative paths in the HTML/browser state
   - deduplicates images by content hash
   - avoids storing large base64 images in `localStorage`
+- Adds iteration safety rules:
+  - copy the full deck folder before modifying an existing HTMLPPT
+  - never replace the full template editor with a simplified fake editor
+  - verify real text editing, image replacement, version save, and history restore
 
 ## Install
 
@@ -83,6 +90,7 @@ http://127.0.0.1:17777/index.html
 Editing behavior:
 
 - text edits are saved in browser `localStorage`
+- saved versions and history are stored in browser `localStorage`, scoped to the current page path
 - image replacements and added images are saved to `images/user-edits/`
 - repeated identical images are deduplicated by hash
 - the deck only stores relative paths
