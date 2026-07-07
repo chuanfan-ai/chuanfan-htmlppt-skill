@@ -190,6 +190,24 @@ node <SKILL_ROOT>/scripts/validate-swiss-deck.mjs path/to/index.html
 - 目视:图片内部如果自带大标题、页码、页脚、角标,优先重生成,不要在页面里再裁切硬救
 - 目视:截图外侧背景应该是安静托底,不能比截图本身更抢眼;Swiss 风截图不得出现圆角和投影
 
+### 0-D-1. 视频页播放框必须跟随源视频比例
+
+**现象**:9:16 竖版视频被放进 16:9 横向黑框里,或 16:9 横版视频被强行塞成竖框;页面看似用了 `object-fit:contain`,但观众看到的是一圈 PPT 外框制造的黑边。
+
+**根因**:`object-fit:contain` 只作用在 `<video>` 内容,外层 `figure` 仍被 grid/flex 拉成错误比例;或者 `figure` 默认 margin 没清掉,导致脚本写入尺寸和实际渲染尺寸不一致。
+
+**做法**:
+- 所有视频外层使用 `.video-natural` 或等价机制。
+- 在 `loadedmetadata` 后读取 `video.videoWidth` / `video.videoHeight`,把外层播放框按真实比例等比缩放到当前版面可用空间。
+- 不要硬写统一 `16/9` 或 `9/16`;非标准横版比例也按源视频宽高显示。
+- `figure.frame-img` 必须 `margin:0`;播放框背景不要用一个比视频大很多的黑色容器。
+- 如果仍有黑边,检查源视频画面本身是否带黑边;只有页面外框制造的黑边才需要改 PPT。
+
+**自检**:
+- 浏览器逐页打开所有视频页,截图前等视频 metadata 加载完成。
+- 控制台或自动化脚本读取: `video.videoWidth/video.videoHeight` 与 `.video-natural.getBoundingClientRect().width/height` 的比例应基本一致。
+- 目视:竖版视频显示为竖框,横版视频显示为横框,没有统一大黑框包住所有视频。
+
 ### 0-D-2. 瑞士风底部分页安全区:最低处不要碰 nav
 
 **现象**:图片 caption、脚注、timeline 下方 label、底部 KPI 被分页小方块挡住,或者视觉上贴得太近。

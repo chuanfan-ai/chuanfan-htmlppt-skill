@@ -367,7 +367,20 @@ cp "<SKILL_ROOT>/assets/template-swiss.html" "项目/XXX/ppt/index.html"
 - GPT-M 2.0 生成图使用 `image-prompts.md` 的"风格 B:瑞士国际主义配图规则"
 - 任何图片、caption、timeline label、footnote 的最低处都不能进入底部分页区域;需要贴底时用 `.nav-safe-bottom` / `.nav-safe-bottom-tight`,不要手写 `bottom:2vh`
 
-#### 3.2.1 · 中文大标题字号分档(风格 B 必做)
+#### 3.2.1 · 视频原比例播放框(所有风格必做)
+
+视频页要保持素材的**原始视频比例**,不是只给 `<video>` 写 `object-fit:contain`。`contain` 只能保证内容不裁切,如果外层 `figure` 是横向大框,竖版视频仍会出现一圈由 PPT 外框制造的黑边。
+
+**硬规则:**
+- 外层播放框必须跟随视频真实宽高生成:读取 `video.videoWidth / video.videoHeight`,把 `.video-natural` / `figure` 的 `aspect-ratio`、宽高同步为同一比例。
+- 不要根据文件名或主观判断硬写 `9/16`、`16/9`;有些视频是 `2500x1306`、`1690x910` 这类非标准横版比例,也必须按真实比例显示。
+- 竖版视频就是竖框,横版视频就是横框;只允许等比缩放到当前版面可用空间,不允许拉伸、裁切或塞进统一大黑框。
+- `figure.frame-img` 必须清掉浏览器默认 `margin`;否则脚本写入的宽高和实际渲染盒子会出现偏差。
+- 如果最终仍有黑边,先确认是不是源视频编码里自带黑边;不要把源视频自带黑边误判成页面外框问题。
+
+**推荐实现:**给视频外层加 `.video-natural`,在 `loadedmetadata` 后读取真实尺寸,按当前版面可用宽高计算最大等比播放框;窗口 resize 和翻页后重新同步一次。验收时比较 `video.videoWidth/video.videoHeight` 与外层 `getBoundingClientRect().width/height`,两者应基本一致。
+
+#### 3.2.2 · 中文大标题字号分档(风格 B 必做)
 
 中文方块字视觉面积大,不能直接套英文 hero 的 6.8-7vw。写中文大标题前先分档:
 
@@ -380,7 +393,7 @@ cp "<SKILL_ROOT>/assets/template-swiss.html" "项目/XXX/ppt/index.html"
 
 如果标题挤占了图片或正文区域,先压缩标题文案,再降字号;不要靠把下方内容推到底来硬塞。
 
-#### 3.2.2 · 瑞士风演示最小字号与字重阶梯(风格 B 必做)
+#### 3.2.3 · 瑞士风演示最小字号与字重阶梯(风格 B 必做)
 
 瑞士风用于投屏演示时,小字不能按网页注释的 10-12px 写。默认遵守以下下限:
 
@@ -424,6 +437,7 @@ cp "<SKILL_ROOT>/assets/template-swiss.html" "项目/XXX/ppt/index.html"
 5. 对照原始参考模板时,以实际页面用法为准,不要只看 CSS helper 定义;原始页面的大字实际多为 200/300,不要被 raw CSS 里的 700/800/900 带偏。
 6. 如果页面别扭,先判断是版式选错、必选组件缺失、可选组件滥用,还是间距/安全区问题;不要直接靠加 margin 硬救。
 7. 全文检查观众可见文案,不能留下“原文保留 / 这页只放 / 单视频页 / 适合复制 / 控制条可播放”这类制作说明;提示词页左侧必须是 takeaway、金句或方法论,视频页必须一页一个无强关联视频。
+8. 视频页必须实际播放框验收:读取每个 `<video>` 的 `videoWidth/videoHeight`,对比外层播放框的渲染宽高比;竖版不能塞进横向大黑框,横版不能被强行改成竖版,非标准横版比例也要按源视频比例显示。
 
 #### 风格 A · 电子杂志风必查
 
