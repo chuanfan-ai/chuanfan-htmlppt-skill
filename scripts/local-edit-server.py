@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Local editor service for Chuanfan HTMLPPT decks.
 
-It serves one deck directory and accepts image replacements, saving them under
-images/user-edits/ with content-hash deduplication.
+It serves one deck directory, stores user images under images/user-edits/ and
+atomically persists the latest editor package as htmlppt-user-state.json.
 """
 
 from __future__ import annotations
@@ -15,14 +15,18 @@ import mimetypes
 import os
 import pathlib
 import sys
+import tempfile
 import webbrowser
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 
 
-VERSION = "1.0.0"
+VERSION = "2.0.0"
 MAX_UPLOAD_BYTES = 80 * 1024 * 1024
+MAX_STATE_BYTES = 24 * 1024 * 1024
 CONFIG_PATHS = {"/__chuanfan_htmlppt_editor__/config", "/__guizang_editor__/config"}
 UPLOAD_PATHS = {"/__chuanfan_htmlppt_editor__/upload-image", "/__guizang_editor__/upload-image"}
+STATE_PATHS = {"/__chuanfan_htmlppt_editor__/save-state"}
+STATE_FILE = "htmlppt-user-state.json"
 ALLOWED_EXTS = {
     ".png": "png",
     ".jpg": "jpg",
@@ -69,16 +73,71 @@ class EditorHandler(SimpleHTTPRequestHandler):
                     "version": VERSION,
                     "deckDir": str(self.deck_dir),
                     "saveDir": "images/user-edits",
+                    "stateFile": STATE_FILE,
                     "maxUploadBytes": MAX_UPLOAD_BYTES,
+                    "maxStateBytes": MAX_STATE_BYTES,
                 }
             )
             return
         super().do_GET()
 
     def do_POST(self) -> None:
+        if self.path in STATE_PATHS:
+            self.save_state()
+            return
         if self.path not in UPLOAD_PATHS:
             self.send_error(404)
             return
+
+        self.save_image()
+
+    def save_state(self) -> None:
+        length = int(self.headers.get("Content-Length") or "0")
+        if length <= 0:
+            self.send_json({"ok": False, "error": "empty state"}, status=400)
+            return
+        if length > MAX_STATE_BYTES:
+            self.send_json({"ok": False, "error": "state too large"}, status=413)
+            return
+
+        try:
+            payload = json.loads(self.rfile.read(length).decode("utf-8"))
+        except (UnicodeDecodeError, json.JSONDecodeError):
+            self.send_json({"ok": False, "error": "invalid json"}, status=400)
+            return
+        if not isinstance(payload, dict) or payload.get("format") != "chuanfan-htmlppt-state":
+            self.send_json({"ok": False, "error": "invalid state format"}, status=400)
+            return
+        if not isinstance(payload.get("current"), dict) or not isinstance(payload.get("baseline"), dict):
+            self.send_json({"ok": False, "error": "missing state sections"}, status=400)
+            return
+
+        target = self.deck_dir / STATE_FILE
+        encoded = json.dumps(payload, ensure_ascii=False, indent=2).encode("utf-8") + b"\n"
+        temp_name = None
+        try:
+            with tempfile.NamedTemporaryFile(
+                mode="wb", prefix=f".{STATE_FILE}.", suffix=".tmp", dir=self.deck_dir, delete=False
+            ) as temp:
+                temp_name = temp.name
+                temp.write(encoded)
+                temp.flush()
+                os.fsync(temp.fileno())
+            os.replace(temp_name, target)
+        finally:
+            if temp_name and os.path.exists(temp_name):
+                os.unlink(temp_name)
+
+        self.send_json(
+            {
+                "ok": True,
+                "path": STATE_FILE,
+                "bytes": len(encoded),
+                "updatedAt": payload.get("exportedAt"),
+            }
+        )
+
+    def save_image(self) -> None:
 
         length = int(self.headers.get("Content-Length") or "0")
         if length <= 0:
