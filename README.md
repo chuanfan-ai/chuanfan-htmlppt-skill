@@ -7,9 +7,10 @@
 ## 核心能力
 
 - 生成单文件 HTMLPPT / 横向翻页网页 PPT
-- 支持两套视觉系统：
+- 支持三套视觉系统：
   - 电子杂志 × 电子墨水
   - 瑞士国际主义
+  - 船帆大会培训
 - 支持键盘、滚轮、触屏翻页
 - 支持 Motion One 入场动效，本地文件和 CDN 双保险
 - 支持低功耗静态模式
@@ -35,6 +36,11 @@
   - 修改已有 HTMLPPT 前先复制完整目录，避免新旧版本覆盖
   - 不能把模板里的完整编辑器简化成只显示按钮的伪编辑器
   - 验收时必须实际检查文字编辑、图片替换、保存版本和历史恢复
+- 内置配图来源与生成边界：
+  - 用户原图、官方素材和真实证据优先
+  - 流程、数据和系统关系优先使用可编辑 HTML/CSS/SVG
+  - 图片生成规则不绑定供应商，用户指定后不得静默切换模型
+  - 生成图默认不承载标题、正文、数据标签和流程文字
 
 ## 适合场景
 
@@ -142,8 +148,15 @@ chuanfan-htmlppt-skill/
 ├── assets/
 │   ├── template.html
 │   ├── template-swiss.html
+│   ├── template-conference.html
+│   ├── editor-core.css
+│   ├── editor-core.js
 │   └── motion.min.js
 ├── references/
+│   ├── local-editor-contract.md
+│   ├── feishu-content-contract.md
+│   ├── style-c-conference-training.md
+│   ├── chuanfan-brand.md
 │   ├── layouts.md
 │   ├── layouts-swiss.md
 │   ├── themes.md
@@ -151,9 +164,14 @@ chuanfan-htmlppt-skill/
 │   ├── image-prompts.md
 │   ├── screenshot-framing.md
 │   └── checklist.md
-└── scripts/
-    ├── local-edit-server.py
-    └── validate-swiss-deck.mjs
+├── scripts/
+│   ├── sync-editor-core.py
+│   ├── local-edit-server.py
+│   ├── validate-deck.mjs
+│   └── validate-swiss-deck.mjs
+└── tests/
+    ├── editor-contract.test.mjs
+    └── image-provider-policy.test.mjs
 ```
 
 ## 校验
@@ -168,6 +186,14 @@ python3 ~/.codex/skills/.system/skill-creator/scripts/quick_validate.py /path/to
 
 ```bash
 node scripts/validate-swiss-deck.mjs /path/to/index.html
+```
+
+检查三套模板的统一编辑器并运行真实浏览器回归：
+
+```bash
+python3 scripts/sync-editor-core.py --check
+node tests/editor-contract.test.mjs
+node tests/image-provider-policy.test.mjs
 ```
 
 检查本地编辑服务：
@@ -192,6 +218,9 @@ python3 scripts/local-edit-server.py --help
 - 图片点击放大
 - 视频原比例播放规则
 - 面向 Codex / Claude 共享 skill 池的说明
+- 船帆大会培训风格与品牌规范
+- 飞书内容顺序、逐字提示词和链接保护
+- 模型无关的配图路由、提示词与素材清单契约
 
 ## 许可
 

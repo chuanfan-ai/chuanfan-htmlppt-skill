@@ -139,6 +139,21 @@ cp <SKILL_ROOT>/assets/template-conference.html <DECK_DIR>/index.html
 
 专门生成的装饰图或背景图可以按版式槽位使用标准比例和 `cover`。不要把这条规则套到用户原始证据素材上。
 
+配图按以下顺序路由：
+
+1. 用户提供的原图、截图、二维码、视频和证据素材。
+2. 有明确来源的官方或公开素材；保留来源 URL，不用生成图冒充真实事件、人物、产品或机构。
+3. 流程、数据、对比和系统关系优先使用可编辑 HTML/CSS/SVG。
+4. 只有封面、章节主视觉、抽象概念和氛围场景再调用图片生成模型。
+
+需要生成配图时完整读取 `references/image-prompts.md`，并遵守：
+
+- 图片供应商与模型由当前运行环境或用户明确指定，Skill 不擅自切换供应商。
+- 用户指定供应商后，失败时只能重试、使用已有素材或改为可编辑图形；禁止静默回退到其他付费图片模型。
+- 生成图默认不承载标题、正文、数据标签和流程文字；这些内容留在 HTML 中，保证中文准确和可编辑。
+- 先决定页面槽位和比例，再生成或选择图片，不把生成结果硬塞进不匹配的容器。
+- 自动化运行时为生成或联网取得的素材写入 `asset-manifest.json`，至少记录页码、来源类型、来源 URL 或模型、提示词、比例、文件路径和失败回退。
+
 ### 6.5 同步统一编辑器
 
 编辑器只有两个源文件：
@@ -194,6 +209,7 @@ python3 <SKILL_ROOT>/scripts/local-edit-server.py --deck-dir . --port 17777
 python3 scripts/sync-editor-core.py --check
 node scripts/validate-deck.mjs <DECK_DIR>/index.html --manifest <DECK_DIR>/source-manifest.json
 node tests/editor-contract.test.mjs
+node tests/image-provider-policy.test.mjs
 ```
 
 如果项目没有来源清单，可以省略 `--manifest`，但不能省略结构和编辑器校验。
@@ -223,6 +239,7 @@ scripts/
   validate-deck.mjs              结构、顺序、逐字块和链接校验
 tests/
   editor-contract.test.mjs       真实浏览器交互回归
+  image-provider-policy.test.mjs 配图供应商与安全边界回归
 references/
   local-editor-contract.md       编辑、历史、恢复和迁移 P0 契约
   feishu-content-contract.md     飞书顺序、内容和逐字保护
