@@ -170,8 +170,8 @@ chrome-min(页眉)、主体内容、底部 footnote 都是 canvas-card 的子元
 - 8×8 / 12×12 直角小方块替代圆点
 - 点阵 `dot-mat` / 描边圆 `ring-mat` / 叉 `cross-mat`(SVG mask)
 
-**图片使用原则(Swiss + GPT-M 2.0)**
-- 图片是网格中的"证据块",不是装饰背景;必须有明确功能:案例、实拍证据、UI 截图、系统图、概念信息图
+**图片使用原则(Swiss)**
+- 图片是网格中的"证据块",不是装饰背景;必须有明确功能:案例、实拍证据、UI 截图或获准生成的概念主视觉。流程、数据、系统关系和文字信息图优先使用可编辑 HTML/CSS/SVG
 - 所有图片容器保持直角、无阴影、无圆角;默认**不加图片外框**,让 caption 或页面网格承担层级
 - 白底信息图 / 流程图 / UI 图:容器背景必须是 `var(--paper)`,不要用灰底包白图,也不要加 `.swiss-keyline` 描边
 - 只有当图片本身边缘无法和页面区分时,才用 `.swiss-lined` 加一条顶部 accent 线;不要给每张图都套边框
@@ -180,7 +180,7 @@ chrome-min(页眉)、主体内容、底部 footnote 都是 canvas-card 的子元
 - 瑞士风图片优先比例:S22 顶部横幅 `21:9`;S15/S16 多图格统一 `21:9` 或统一 `16:10`
 - 生成 2-3 张配图时,必须先绑定原始版式槽位:单张大图 = S22;多图 = S15/S16 网格改造;不要使用未登记的 P23/P24
 - S22 的照片主体必须位于中央安全区,HTML 用 `object-position:center 35%` 或 `center center`,不要用 `top center` 截人脸
-- GPT-M 2.0 生成图必须遵守单一 accent 色、Helvetica/Inter 气质、12/16 列网格、直角纯色、无渐变/阴影/圆角
+- 当前已配置图片模型生成的视觉必须遵守单一 accent 色、克制负空间和直角构图;Helvetica/Inter 字体、12/16 列网格、标签和数据由 HTML 模板承担,不烘焙进图片
 - 生成图只保留核心图像本身,不要把页眉、页脚、标题、页码、角标、边框、署名画进图片里
 
 **版式多样性硬规则**
@@ -702,7 +702,7 @@ Swiss 主题有 22 个登记版式,生成时要主动展示版式系统,不要�
 **关键类**:`.image-hero` `.hero-img-wrap`(60vh)`.hero-overlay-block` `.hero-stats`
 **动效 recipe**:`image-hero` — 图缓慢 zoom-out(scale 1.05→1)→ 白块 scaleX 0→1 推开 → 三 KPI 顶线依序画出
 **注意**:
-- 图片优先用 `images/{页号}-{语义}.png` 本地文件(GPT-M 2.0 或用户提供素材),不要默认外链 unsplash
+- 图片优先用 `images/{页号}-{语义}.png` 本地文件(用户素材、官方素材或当前已配置图片模型的生成结果),不要默认外链 unsplash
 - 图片下方内容不要贴着图下沿,使用 `.image-hero-body` 统一给下半屏增加顶部缓冲
 - 三列 KPI 大字号要限高(`min(4.6vw, 7.6vh)`),小字用 `margin-top:auto` 锚定列底,防止溢到 nav 圆点
 - 列高度统一(grid 不要 `align-items:start`,让列拉伸到同一高度)
@@ -768,7 +768,7 @@ Swiss 主题有 22 个登记版式,生成时要主动展示版式系统,不要�
     </div>
     <div style="flex:1;padding:0;display:grid;grid-template-rows:auto 1fr;gap:5vh">
       <div data-anim="head" style="display:flex;flex-direction:column;gap:1.4vh">
-        <div class="t-meta">Evidence · GPT-M 2.0</div>
+        <div class="t-meta">Evidence · Source</div>
         <h2 style="font-family:var(--sans),var(--sans-zh);font-weight:200;font-size:min(7vw,12vh);line-height:.96;letter-spacing:-.035em">[必填] 一句核心论点</h2>
       </div>
       <div class="swiss-img-split align-image-bottom" data-anim="up">
@@ -802,7 +802,7 @@ Swiss 主题有 22 个登记版式,生成时要主动展示版式系统,不要�
 - 同组图片必须同一比例、同一高度、同一边距密度;不要一张 16:9、一张 4:3、一张长条截图混排
 - 标题区和图片区之间必须有明显缓冲;模板里的 `.swiss-img-grid` 默认带顶部间距,只有在外层 grid 已经给足 gap 时才加 `.tight`
 - UI/信息图统一 `.fit-contain`;照片统一 cover
-- 如果用户原始截图比例混乱,先按 `screenshot-framing.md` 做 CleanShot X 式程序化适配;只有太长、太窄或需要重构信息时,才用 GPT-M 2.0 重生成同一比例的"截图再设计"
+- 如果用户原始截图比例混乱,先按 `screenshot-framing.md` 做 CleanShot X 式程序化适配;只有太长、太窄或需要重构信息,并且用户允许示意重绘时,才使用当前已配置图片模型生成同一比例的"截图再设计"
 
 ```html
 <section class="slide light" data-animate="grid-reveal">

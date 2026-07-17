@@ -5,9 +5,10 @@ An enhanced local-agent skill for generating HTMLPPT: horizontal, browser-native
 ## What It Does
 
 - Generates single-file HTMLPPT decks
-- Supports two visual systems:
+- Supports three visual systems:
   - Editorial magazine x electronic ink
   - Swiss International Style
+  - Chuanfan Conference Training
 - Supports keyboard, wheel, and touch navigation
 - Preserves image and video aspect ratios
 - Provides image lightbox preview
@@ -30,6 +31,11 @@ An enhanced local-agent skill for generating HTMLPPT: horizontal, browser-native
   - copy the full deck folder before modifying an existing HTMLPPT
   - never replace the full template editor with a simplified fake editor
   - verify real text editing, image replacement, version save, and history restore
+- Defines image sourcing and generation boundaries:
+  - prefer user-provided, official, and verifiable source material
+  - keep flows, data, and system diagrams editable with HTML/CSS/SVG
+  - keep generation prompts provider-neutral and never switch providers silently
+  - keep slide text and data out of generated images
 
 ## Install
 
@@ -108,6 +114,14 @@ Validate a Swiss deck:
 
 ```bash
 node scripts/validate-swiss-deck.mjs /path/to/index.html
+```
+
+Verify the shared editor core and run the real-browser editor regression:
+
+```bash
+python3 scripts/sync-editor-core.py --check
+node tests/editor-contract.test.mjs
+node tests/image-provider-policy.test.mjs
 ```
 
 Check the editor service:
