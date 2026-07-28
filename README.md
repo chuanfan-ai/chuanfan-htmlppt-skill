@@ -1,8 +1,12 @@
 # Chuanfan HTMLPPT Skill
 
-一个面向本地 AI Agent 的 HTMLPPT 生成 skill。它可以生成横向翻页网页 PPT，并内置演示级本地编辑能力：改字、替换图片、添加文字、添加图片、拖动缩放、删除选中元素、保存版本和恢复历史版本。
+> 通用演示、页面内编辑、保存与版本恢复已拆分为独立的
+> [`htmlppt-interaction-editor`](https://github.com/chuanfan-ai/htmlppt-interaction-editor)。
+> 本 Skill 负责 HTMLPPT 的内容、结构和视觉，完成后必须调用该独立 Skill 安装交互层。
 
-本仓库是船帆维护的 HTMLPPT skill，基于 [op7418/guizang-ppt-skill](https://github.com/op7418/guizang-ppt-skill) 做个人增强。原始视觉系统、版式体系和大量质量规则来自歸藏维护的开源项目；本版本重点增强了本地演示编辑、图片落盘保存和 Codex/Claude 共享 skill 使用体验。
+一个面向本地 AI Agent 的 HTMLPPT 生成 skill。它可以生成横向翻页网页 PPT，并通过独立交互 Skill 配套演示级本地编辑能力：改字、替换图片、添加文字、添加图片、拖动缩放、删除选中元素、保存版本和恢复历史版本。
+
+本仓库是船帆维护的 HTMLPPT skill，基于 [op7418/guizang-ppt-skill](https://github.com/op7418/guizang-ppt-skill) 做个人增强。原始视觉系统、版式体系和大量质量规则来自歸藏维护的开源项目；本版本重点增强了大会培训视觉、素材保护、独立交互 Skill 接入和 Codex/Claude 共享 skill 使用体验。
 
 ## 核心能力
 
@@ -16,7 +20,7 @@
 - 支持低功耗静态模式
 - 支持图片点击原图放大
 - 支持视频原比例播放，避免 9:16 视频被拉伸成 16:9
-- 支持本地演示编辑层：
+- 调用独立 `htmlppt-interaction-editor` 提供本地演示编辑层：
   - 直接编辑页面文字
   - 保留提示词、代码块、列表、卡片等高价值文本，并让它们可编辑
   - 替换已有图片
@@ -113,23 +117,7 @@ ln -sfn ~/.agents/skills/chuanfan-htmlppt-skill ~/.codex/skills/chuanfan-htmlppt
 
 普通演示时，直接打开生成的 `index.html` 即可。
 
-如果需要在浏览器里持久化替换图片或新增图片，启动本地编辑服务：
-
-```bash
-python3 ~/.agents/skills/chuanfan-htmlppt-skill/scripts/local-edit-server.py --deck-dir /path/to/your/ppt --open
-```
-
-如果安装在 Claude 或 Codex 私有目录，把脚本路径换成实际位置：
-
-```bash
-python3 ~/.codex/skills/chuanfan-htmlppt-skill/scripts/local-edit-server.py --deck-dir /path/to/your/ppt --open
-```
-
-服务启动后会打开：
-
-```text
-http://127.0.0.1:17777/index.html
-```
+交互 Skill 安装后会在 PPT 目录生成 `打开可编辑PPT.command`、`.bat` 和 `.sh`。优先双击对应系统的一键入口；本地服务、媒体目录和状态落盘由 `htmlppt-interaction-editor` 统一管理。
 
 编辑规则：
 
@@ -188,18 +176,12 @@ python3 ~/.codex/skills/.system/skill-creator/scripts/quick_validate.py /path/to
 node scripts/validate-swiss-deck.mjs /path/to/index.html
 ```
 
-检查三套模板的统一编辑器并运行真实浏览器回归：
+检查内容结构、配图规则和独立交互 Skill：
 
 ```bash
-python3 scripts/sync-editor-core.py --check
-node tests/editor-contract.test.mjs
 node tests/image-provider-policy.test.mjs
-```
-
-检查本地编辑服务：
-
-```bash
-python3 scripts/local-edit-server.py --help
+python3 <HTMLPPT_INTERACTION_EDITOR_ROOT>/scripts/self_check.py
+python3 <HTMLPPT_INTERACTION_EDITOR_ROOT>/scripts/install_editor.py /path/to/deck --dry-run
 ```
 
 ## 和原版的主要差异

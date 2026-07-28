@@ -102,4 +102,4 @@ HTML 页面使用以下稳定标记：
 1. 先读取 `htmlppt-user-state.json` 和浏览器最新保存态。
 2. 以用户最新修改为基底，再增量改功能或设计。
 3. 禁止用旧 HTML 整页覆盖用户已保存的文字、图片、位置、字号、颜色和新增元素。
-4. 若源码结构必须变化，按 `local-editor-contract.md` 做迁移并建立整套备份。
+4. 若源码结构必须变化，先按独立 `htmlppt-interaction-editor` Skill 保护用户状态并建立整套备份；旧项目再参考 `local-editor-contract.md` 做兼容迁移。

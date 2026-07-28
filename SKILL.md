@@ -1,11 +1,11 @@
 ---
 name: chuanfan-htmlppt-skill
-description: 生成、修改和验收可本地演示与安全编辑的横向 HTMLPPT。提供电子杂志、瑞士国际主义、船帆大会培训三种独立模板；支持飞书内容顺序忠实重构、提示词逐字保护、链接可点击、图片和视频原比例、文字/图片编辑删除拖动缩放、字号颜色单行、当前页历史、整套备份、重置、恢复原稿及用户最新保存态保护。用户要求制作或修改网页 PPT、培训课件、大会分享、HTML slide deck，或处理现有 HTMLPPT 编辑器时使用。
+description: 生成、修改和验收横向 HTMLPPT 的内容、结构与视觉，提供电子杂志、瑞士国际主义、船帆大会培训三种独立模板；支持飞书内容顺序忠实重构、提示词逐字保护、链接可点击、图片和视频原比例及用户最新保存态保护。所有通用演示、页面内编辑、保存和版本恢复功能必须调用独立的 htmlppt-interaction-editor Skill 安装，不在本 Skill 内重复实现。用户要求制作或修改网页 PPT、培训课件、大会分享或 HTML slide deck 时使用。
 ---
 
 # Chuanfan HTMLPPT Skill
 
-生成的是可直接在浏览器演示、可安全迭代的单文件 HTMLPPT。内容、视觉、交互和用户最新修改同等重要；不能为了重做设计覆盖用户已经保存的文字、图片和位置。
+生成的是可直接在浏览器演示、可安全迭代的 HTMLPPT。这个 Skill 负责内容、结构与视觉；通用演示和编辑交互由独立的 `htmlppt-interaction-editor` Skill 负责。不能为了重做设计覆盖用户已经保存的文字、图片和位置。
 
 ## 1. 三种风格
 
@@ -35,9 +35,9 @@ description: 生成、修改和验收可本地演示与安全编辑的横向 HTM
 
 每次任务都完整读取：
 
-1. `references/local-editor-contract.md`
-2. `references/checklist.md`
-3. 当前选择的风格规范和模板
+1. `references/checklist.md`
+2. 当前选择的风格规范和模板
+3. 独立 `htmlppt-interaction-editor` Skill 的 `SKILL.md`
 
 满足以下条件时再读取：
 
@@ -45,6 +45,7 @@ description: 生成、修改和验收可本地演示与安全编辑的横向 HTM
 - 需要截图画布适配：`references/screenshot-framing.md`
 - 需要生成配图：`references/image-prompts.md`
 - 需要 Swiss 地图：`references/swiss-map-component.md`
+- 需要迁移旧版内嵌编辑器或旧状态：`references/local-editor-contract.md`
 
 ## 3. 需求判断
 
@@ -76,7 +77,7 @@ description: 生成、修改和验收可本地演示与安全编辑的横向 HTM
 - 因 schema、模板或源码 revision 变化直接清空 `localStorage`。
 - 重新实现一套功能更少的编辑器覆盖统一核心。
 
-完整迁移与恢复语义见 `references/local-editor-contract.md`。
+最新交互、保存和恢复语义以独立 `htmlppt-interaction-editor` Skill 为准；旧项目迁移补充见 `references/local-editor-contract.md`。
 
 ## 5. 飞书来源模式（P0）
 
@@ -154,65 +155,68 @@ cp <SKILL_ROOT>/assets/template-conference.html <DECK_DIR>/index.html
 - 先决定页面槽位和比例，再生成或选择图片，不把生成结果硬塞进不匹配的容器。
 - 自动化运行时为生成或联网取得的素材写入 `asset-manifest.json`，至少记录页码、来源类型、来源 URL 或模型、提示词、比例、文件路径和失败回退。
 
-### 6.5 同步统一编辑器
+### 6.5 调用独立交互编辑器
 
-编辑器只有两个源文件：
-
-- `assets/editor-core.css`
-- `assets/editor-core.js`
-
-修改它们后必须运行：
+页面内容和视觉完成后，必须调用 `htmlppt-interaction-editor` 安装或升级交互层：
 
 ```bash
-python3 scripts/sync-editor-core.py
-python3 scripts/sync-editor-core.py --check
+python3 <HTMLPPT_INTERACTION_EDITOR_ROOT>/scripts/install_editor.py <DECK_DIR>
 ```
 
-三个模板中的内联副本必须与核心 hash 一致，不能分别手改。
+先运行 `--dry-run`。检测结果为 `unsafe` 时停止，向用户说明备用翻页规则；只有用户明确同意后才使用 `--use-fallback` 生成“原名称-可编辑版”。检测结果为 `unsafe-existing-editor` 时禁止叠加安装或用备用模式绕过，先按独立 Skill 的要求人工划定旧编辑器边界。
 
-## 7. 统一编辑器功能契约
+本仓库的 `assets/editor-core.*`、模板内 `HTMLPPT_EDITOR_CORE_*` 和同步脚本仅用于旧项目兼容。新建或新修改的 deck 不得把它们当作交互单一事实来源。独立安装器会从产物中安全移除这些带标记的旧核心，再安装新核心。
 
-三个模板必须稳定提供：
+## 7. 独立 Skill 依赖（P0）
 
-- 编辑模式：只由按钮进入和退出；按 `E` 不退出。
-- 键盘隔离：编辑态左右键、空格、PageUp/PageDown、滚轮和触屏不翻页。
-- 文字：修改、拖动、缩放、字号、颜色、单行显示、删除。
-- 图片：替换、新增、拖动、缩放、删除，保持比例。
-- 添加文本：默认透明背景。
-- 历史：当前页历史与整套 PPT 备份分开显示、可点击恢复。
-- 恢复：重置当前页、恢复原稿，恢复前自动备份当前状态。
-- 保存：浏览器刷新恢复；本地服务可把最新状态原子写入 `htmlppt-user-state.json`。
-- 保护：源码升级迁移用户状态，不清空旧数据。
+调用前依次查找：
 
-编辑器界面预设五种常用颜色：`#090909`、`#1677ff`、`#ff7a00`、`#525252`、`#ffffff`。
+1. 当前智能体已加载的 `$htmlppt-interaction-editor`。
+2. `~/.agents/skills/htmlppt-interaction-editor/SKILL.md`
+3. `~/.codex/skills/htmlppt-interaction-editor/SKILL.md`
+4. `~/.claude/skills/htmlppt-interaction-editor/SKILL.md`
+
+如果没有安装，智能体可以自行从公开仓库安装：
+
+```bash
+git clone https://github.com/chuanfan-ai/htmlppt-interaction-editor.git \
+  ~/.agents/skills/htmlppt-interaction-editor
+```
+
+然后按当前平台的 Skill 目录规则建立链接或复制注册。安装后完整读取新 Skill 的 `SKILL.md` 和它要求的交互契约，再继续生成流程。
+
+如果网络、权限或平台规则不允许自动安装，立即告诉用户缺少该依赖和准备采用的安装方式。禁止临时重写一套功能更少的编辑器来冒充完成。
+
+`htmlppt-interaction-editor` 是以下能力的唯一规则源：
+
+- 全屏、键盘/触屏和备用翻页。
+- 左上角隐藏编辑入口和顶部工具栏。
+- 文字、图片、视频新增、替换、删除、拖动、缩放、字号、颜色、单行。
+- 撤销重做、当前页历史、整套备份、保存、恢复上次保存、重置和恢复原稿。
+- `htmlppt-user-state.json`、`images/user-edits/`、一键启动文件及刷新恢复。
 
 ## 8. 本地预览和持久化
 
-在 deck 目录启动：
+交互 Skill 安装后，优先使用它生成的一键入口：
 
-```bash
-python3 <SKILL_ROOT>/scripts/local-edit-server.py --deck-dir . --port 17777
-```
+- macOS：`打开可编辑PPT.command`
+- Windows：`打开可编辑PPT.bat`
+- Linux/macOS 终端：`打开可编辑PPT.sh`
 
-打开 `http://127.0.0.1:17777/index.html`。服务只在当前 deck 目录写入：
-
-- `images/user-edits/`：新增或替换图片，按内容 hash 去重。
-- `htmlppt-user-state.json`：最新状态包，临时文件写完后原子替换。
-
-纯 `file://` 仍可演示和使用浏览器存储，但无法可靠把图片与状态写回项目目录。
+纯 `file://` 可以演示和编辑；无法写回磁盘时由独立交互 Skill 自动下载状态备份。
 
 ## 9. 验收
 
 交付前必须执行：
 
 ```bash
-python3 scripts/sync-editor-core.py --check
 node scripts/validate-deck.mjs <DECK_DIR>/index.html --manifest <DECK_DIR>/source-manifest.json
-node tests/editor-contract.test.mjs
 node tests/image-provider-policy.test.mjs
+python3 <HTMLPPT_INTERACTION_EDITOR_ROOT>/scripts/self_check.py
+python3 <HTMLPPT_INTERACTION_EDITOR_ROOT>/scripts/install_editor.py <DECK_DIR> --dry-run
 ```
 
-如果项目没有来源清单，可以省略 `--manifest`，但不能省略结构和编辑器校验。
+先在交互 Skill 安装前运行本 Skill 的内容结构校验，再安装交互层并按新 Skill 的 `references/qa-checklist.md` 做浏览器验收。如果项目没有来源清单，可以省略 `--manifest`。
 
 真实浏览器至少检查 1920×1080、1440×900、1366×768：
 
@@ -231,14 +235,14 @@ assets/
   template.html                  风格 A
   template-swiss.html            风格 B
   template-conference.html       风格 C
-  editor-core.css                编辑器 CSS 单一事实来源
-  editor-core.js                 编辑器 JS 单一事实来源
+  editor-core.css                旧项目兼容资源
+  editor-core.js                 旧项目兼容资源
 scripts/
-  sync-editor-core.py            同步核心到三个单文件模板
-  local-edit-server.py           本地图片与状态持久化服务
+  sync-editor-core.py            旧项目兼容同步脚本
+  local-edit-server.py           旧项目兼容服务
   validate-deck.mjs              结构、顺序、逐字块和链接校验
 tests/
-  editor-contract.test.mjs       真实浏览器交互回归
+  editor-contract.test.mjs       旧项目兼容回归
   image-provider-policy.test.mjs 配图供应商与安全边界回归
 references/
   local-editor-contract.md       编辑、历史、恢复和迁移 P0 契约

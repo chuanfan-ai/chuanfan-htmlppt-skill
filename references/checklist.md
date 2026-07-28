@@ -5,7 +5,7 @@
 ## 0. 规则优先级
 
 1. 用户本轮明确要求。
-2. 用户最新保存态与 `references/local-editor-contract.md`。
+2. 用户最新保存态与独立 `htmlppt-interaction-editor` Skill。
 3. 飞书来源与 `references/feishu-content-contract.md`。
 4. 当前选择的风格规范与模板。
 5. 本清单的通用建议。
@@ -14,22 +14,17 @@
 
 ## 1. P0：用户修改与编辑器
 
-生成、修改或验收编辑器前，完整读取 `references/local-editor-contract.md`。
+生成、修改或验收交互前，完整读取独立 `htmlppt-interaction-editor` Skill；本仓库的 `local-editor-contract.md` 只用于迁移旧版项目。
 
 - [ ] 已确认浏览器/本地状态文件中的用户最新保存态。
 - [ ] 后续设计修改以最新保存态为基底，没有从旧 HTML 覆盖用户文字和位置。
 - [ ] 修改源码前已创建整套 PPT 备份。
 - [ ] schema 或源码 revision 变化时执行迁移，没有清空旧存储键。
-- [ ] 只能点击编辑按钮进入/退出编辑模式；输入 `E` 不退出。
-- [ ] 编辑模式下左右键、空格、PageUp/PageDown 不翻页。
-- [ ] 标题、正文、卡片、提示词、代码块和 `[data-editable]` 可编辑。
-- [ ] 文字和图片都可选择、拖动、缩放和删除。
-- [ ] 添加文本默认透明，无演示态背景和虚线框。
-- [ ] 可调字号、深色、品牌蓝、品牌橙、灰、白与单行显示。
-- [ ] 图片替换/新增写入 `images/user-edits/`，不把大图 base64 存进状态。
-- [ ] 保存后刷新恢复；状态可落盘为 `htmlppt-user-state.json`。
-- [ ] 当前页历史与整套备份分栏可见，可点击恢复，不使用编号输入框。
-- [ ] 重置当前页只影响当前页；恢复原稿恢复不可变基线且保留历史。
+- [ ] 已用独立 Skill 的安装器安全检测并安装交互层，没有双工具栏。
+- [ ] 左上角隐藏入口、顶部工具栏、F 全屏和编辑态键盘隔离通过真实操作。
+- [ ] 文字、图片、视频的新增、替换、删除、移动、缩放和上下文按钮通过。
+- [ ] 保存、刷新恢复、恢复上次保存、当前页历史、整套备份、重置和恢复原稿通过。
+- [ ] 本地服务把用户媒体写入 `images/user-edits/`，状态原子写入 `htmlppt-user-state.json`。
 
 ## 2. P0：来源内容忠实
 
@@ -113,22 +108,22 @@
 
 ## 9. P1：交互与演示
 
-- [ ] 演示模式左右键、空格、PageUp/PageDown、Home/End 正常。
+- [ ] 备用导航启用时左右键、空格、PageUp/PageDown 正常。
 - [ ] 编辑模式完全隔离上述翻页键。
 - [ ] 滚轮和触屏在编辑模式不翻页。
 - [ ] 页码、总页数、hash 和实际页面一致。
 - [ ] 外部链接在演示模式可以打开新标签页。
 - [ ] 视频可播放、有控件、不会因翻页残留错误状态。
-- [ ] 全屏按钮与 Esc 退出正常。
+- [ ] `F` 全屏与 Esc 关闭面板/退出全屏正常。
 
 ## 10. 自动化与真实浏览器验收
 
 至少执行：
 
 ```bash
-python3 scripts/sync-editor-core.py --check
 node scripts/validate-deck.mjs path/to/index.html --manifest path/to/source-manifest.json
-node tests/editor-contract.test.mjs
+python3 <HTMLPPT_INTERACTION_EDITOR_ROOT>/scripts/self_check.py
+python3 <HTMLPPT_INTERACTION_EDITOR_ROOT>/scripts/install_editor.py path/to/deck --dry-run
 ```
 
 视觉验收必须打开真实浏览器，不只检查 HTML/CSS：
@@ -136,7 +131,7 @@ node tests/editor-contract.test.mjs
 1. 截取关键页面：封面、密集文字、图片、提示词、视频、行动页。
 2. 对照来源文档和参考 PPT。
 3. 检查重叠、溢出、孤行、媒体比例和明暗节奏。
-4. 再跑编辑器键盘、保存、刷新、历史、重置和恢复流程。
+4. 安装独立交互层，再按它的 `references/qa-checklist.md` 跑键盘、媒体、保存、刷新、历史、重置和恢复流程。
 
 ## 11. 交付结论
 
